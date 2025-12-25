@@ -1,37 +1,58 @@
 package ui;
 
+import net.miginfocom.swing.MigLayout;
+import websocket.SocketClient;
 import javax.swing.*;
 import java.awt.*;
-import java.time.LocalDate;
-import presensi_2tier.PresensiCRUD;
 
 public class PresensiInputPanel extends JPanel {
-    private JTextField txtNama = new JTextField(20);
-    private JTextField txtTgl = new JTextField(10);
-    private JComboBox<String> cbStatus = new JComboBox<>(new String[]{"Hadir", "Izin", "Sakit"});
-    private JButton btnSimpan = new JButton("Simpan");
+    private JTextField txtNama, txtTanggal;
+    private JComboBox<String> cbStatus;
 
-    public PresensiInputPanel(PresensiDataPanel dataPanel) {
-        setLayout(new GridBagLayout());
+    public PresensiInputPanel() {
         setBackground(Color.WHITE);
-        txtTgl.setText(LocalDate.now().toString());
+        setLayout(new MigLayout("wrap 1, fillx, insets 40", "[fill]"));
 
-        GridBagConstraints g = new GridBagConstraints();
-        g.insets = new Insets(5,5,5,5); g.fill = GridBagConstraints.HORIZONTAL;
+        JLabel lblTitle = new JLabel("Input Presensi");
+        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 26));
+        add(lblTitle, "gapbottom 20");
 
-        g.gridx=0; g.gridy=0; add(new JLabel("Nama:"), g);
-        g.gridx=1; add(txtNama, g);
-        g.gridx=0; g.gridy=1; add(new JLabel("Tanggal:"), g);
-        g.gridx=1; add(txtTgl, g);
-        g.gridx=0; g.gridy=2; add(new JLabel("Status:"), g);
-        g.gridx=1; add(cbStatus, g);
-        g.gridy=3; add(btnSimpan, g);
+        add(new JLabel("Nama Lengkap"), "gapbottom 5");
+        txtNama = new JTextField();
+        add(txtNama, "height 40!, gapbottom 20");
 
-        btnSimpan.addActionListener(e -> {
-            new PresensiCRUD().tambahPresensi(txtNama.getText(), txtTgl.getText(), (String)cbStatus.getSelectedItem());
-            JOptionPane.showMessageDialog(this, "Data Tersimpan!");
-            dataPanel.refreshTable(); // Refresh otomatis ke tabel
-            txtNama.setText("");
-        });
+        add(new JLabel("Tanggal (YYYY-MM-DD)"), "gapbottom 5");
+        txtTanggal = new JTextField("2025-12-25");
+        add(txtTanggal, "height 40!, gapbottom 20");
+
+        add(new JLabel("Status"), "gapbottom 5");
+        cbStatus = new JComboBox<>(new String[]{"Hadir", "Izin", "Sakit", "Alpa"});
+        add(cbStatus, "height 40!, gapbottom 40");
+
+        JButton btnSimpan = new JButton("Simpan ke Server");
+        btnSimpan.setBackground(new Color(13, 110, 253));
+        btnSimpan.setForeground(Color.WHITE);
+        btnSimpan.setFont(new Font("Segoe UI", Font.BOLD, 15));
+
+        btnSimpan.addActionListener(e -> aksiSimpan());
+        add(btnSimpan, "height 45!");
+    }
+
+    private void aksiSimpan() {
+        String nama = txtNama.getText().trim();
+        String tgl = txtTanggal.getText().trim();
+        String status = (String) cbStatus.getSelectedItem();
+
+        if (nama.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Nama harus diisi!");
+            return;
+        }
+
+        // Protokol 3-Tier: Mengirim data mentah ke server aplikasi
+        String protocolMsg = "SAVE_PRESENSI|" + nama + "|" + tgl + "|" + status;
+        new SocketClient().send(protocolMsg);
+
+        JOptionPane.showMessageDialog(this, "Data dikirim ke server aplikasi!");
+        txtNama.setText("");
     }
 }

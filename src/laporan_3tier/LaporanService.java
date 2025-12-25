@@ -1,29 +1,30 @@
 package laporan_3tier;
 
-import java.sql.*;
 import util.DBConnection;
+import java.sql.*;
 
 public class LaporanService {
+    // Mengambil total semua data presensi
     public int getTotalPresensi() {
-        return executeCountQuery("SELECT COUNT(*) FROM presensi");
+        return getCount("SELECT COUNT(*) FROM presensi");
     }
 
+    // Mengambil jumlah yang statusnya 'Hadir'
     public int getHadirHariIni() {
-        // Query untuk menghitung status 'Hadir' hari ini
-        return executeCountQuery("SELECT COUNT(*) FROM presensi WHERE status='Hadir'");
+        return getCount("SELECT COUNT(*) FROM presensi WHERE status = 'Hadir'");
     }
 
+    // Mengambil jumlah gabungan Izin dan Sakit
     public int getIzinSakit() {
-        // Query untuk menghitung status 'Izin' atau 'Sakit'
-        return executeCountQuery("SELECT COUNT(*) FROM presensi WHERE status IN ('Izin', 'Sakit')");
+        return getCount("SELECT COUNT(*) FROM presensi WHERE status IN ('Izin', 'Sakit')");
     }
 
-    private int executeCountQuery(String sql) {
+    private int getCount(String sql) {
         try (Connection conn = DBConnection.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+             Statement st = conn.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
             if (rs.next()) return rs.getInt(1);
-        } catch (SQLException e) { e.printStackTrace(); }
+        } catch (Exception e) { e.printStackTrace(); }
         return 0;
     }
 }

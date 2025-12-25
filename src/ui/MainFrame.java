@@ -2,39 +2,58 @@ package ui;
 
 import javax.swing.*;
 import java.awt.*;
+import laporan_3tier.LaporanController;
 
 public class MainFrame extends JFrame {
-    private CardLayout cardLayout = new CardLayout();
-    private JPanel mainPanel = new JPanel(cardLayout);
-    
-    // Inisialisasi panel-panel halaman
-    private PresensiDataPanel presensiDataPanel = new PresensiDataPanel();
-    private PresensiInputPanel presensiInputPanel = new PresensiInputPanel(presensiDataPanel);
-    private LaporanPanel laporanPanel = new LaporanPanel();
-    private SidebarPanel sidebarPanel;
+    private JPanel mainContent; // Panel kanan yang isinya ganti-ganti
+    private CardLayout cardLayout;
 
     public MainFrame() {
         setTitle("Sistem Presensi Karyawan");
-        setSize(1100, 700);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(1000, 600);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
-        // Mengirimkan 'this' (MainFrame) ke SidebarPanel agar tombol bisa bekerja
-        sidebarPanel = new SidebarPanel(this);
+        // 1. Sidebar (Kiri)
+        // SidebarPanel membutuhkan referensi MainFrame ini untuk fungsi showPage
+        SidebarPanel sidebar = new SidebarPanel(this);
+        add(sidebar, BorderLayout.WEST);
 
-        mainPanel.add(presensiInputPanel, "Input");
-        mainPanel.add(presensiDataPanel, "Data");
-        mainPanel.add(laporanPanel, "Laporan");
+        // 2. Main Content (Kanan) menggunakan CardLayout
+        cardLayout = new CardLayout();
+        mainContent = new JPanel(cardLayout);
+        
+        // Tambahkan panel-panel ke cardLayout sebagai komponen awal
+        mainContent.add(new PresensiInputPanel(), "INPUT_PRESENSI");
+        mainContent.add(new PresensiDataPanel(), "DATA_PRESENSI");
+        
+        // Untuk Laporan, kita siapkan instance awal
+        LaporanPanel laporanPanel = new LaporanPanel();
+        mainContent.add(laporanPanel, "LAPORAN");
 
-        add(sidebarPanel, BorderLayout.WEST); // Sidebar di kiri
-        add(mainPanel, BorderLayout.CENTER); // Konten di kanan
+        add(mainContent, BorderLayout.CENTER);
     }
 
-    public void tampilkanHalaman(String namaHalaman) {
-        if (namaHalaman.equals("Data")) {
-            presensiDataPanel.refreshTable(); // Refresh tabel saat halaman dibuka
+    /**
+     * Fungsi untuk pindah halaman yang dipanggil dari Sidebar.
+     * Khusus untuk halaman LAPORAN, kita akan memanggil Controller 
+     * agar data selalu yang terbaru saat halaman dibuka.
+     */
+    public void showPage(String pageName) {
+        if (pageName.equals("LAPORAN")) {
+            // Kita buat panel baru agar data selalu segar (fresh) dari database
+            LaporanPanel lp = new LaporanPanel();
+            LaporanController controller = new LaporanController(lp);
+            
+            // Panggil fungsi controller untuk mengisi data ke view
+            controller.updateLaporan(); 
+            
+            // Update isi mainContent khusus untuk card LAPORAN
+            mainContent.add(lp, "LAPORAN");
         }
-        cardLayout.show(mainPanel, namaHalaman);
+        
+        // Pindah ke halaman yang dipilih
+        cardLayout.show(mainContent, pageName);
     }
 }

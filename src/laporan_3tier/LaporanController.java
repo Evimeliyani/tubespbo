@@ -11,13 +11,13 @@ public class LaporanController {
         this.service = new LaporanService();
     }
 
-    // Fungsi untuk memperbarui angka-angka di LaporanPanel
     public void updateLaporan() {
+        // Ambil data dari service
         int total = service.getTotalPresensi();
         int hadir = service.getHadirHariIni();
         int izinSakit = service.getIzinSakit();
 
-        // Mengirim data ke UI LaporanPanel
+        // Kirim data ke UI
         view.setStatistik(total, hadir, izinSakit);
     }
 }
