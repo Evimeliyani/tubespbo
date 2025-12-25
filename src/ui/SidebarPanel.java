@@ -1,24 +1,18 @@
 package ui;
-
 import javax.swing.*;
 import java.awt.*;
 
 public class SidebarPanel extends JPanel {
-    public SidebarPanel(MainFrame mainFrame) { // Harus ada parameter MainFrame
-        setLayout(new GridLayout(10, 1, 5, 5));
+    public SidebarPanel(MainFrame frame) {
+        setLayout(new GridLayout(5, 1, 10, 10));
         setPreferredSize(new Dimension(200, 0));
+        setBackground(new Color(236, 240, 241));
 
-        JButton btnInput = new JButton("Input Presensi");
-        JButton btnData = new JButton("Data Presensi");
-        JButton btnLaporan = new JButton("Laporan");
-
-        // Memanggil method tampilkanHalaman di MainFrame
-        btnInput.addActionListener(e -> mainFrame.tampilkanHalaman("Input"));
-        btnData.addActionListener(e -> mainFrame.tampilkanHalaman("Data"));
-        btnLaporan.addActionListener(e -> mainFrame.tampilkanHalaman("Laporan"));
-
-        add(btnInput);
-        add(btnData);
-        add(btnLaporan);
+        String[] menus = {"Input Presensi", "Data Presensi", "Laporan"};
+        for (String m : menus) {
+            JButton btn = new JButton(m);
+            btn.addActionListener(e -> frame.tampilkanHalaman(m.startsWith("Input") ? "Input" : m.startsWith("Data") ? "Data" : "Laporan"));
+            add(btn);
+        }
     }
 }
